@@ -3,5 +3,10 @@
   "version": "1.0.0",
   "main": "index.js",
   "author": "matsuhisa <matsuhisa+github@gmail.com>",
-  "license": "MIT"
+  "license": "MIT",
+  "dependencies": {
+    "apollo-server": "^2.21.2",
+    "graphql": "^15.5.0",
+    "nodemon": "^2.0.7"
+  }
 }
