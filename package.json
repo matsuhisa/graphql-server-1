@@ -1,0 +1,7 @@
+{
+  "name": "graphql-server-1",
+  "version": "1.0.0",
+  "main": "index.js",
+  "author": "matsuhisa <matsuhisa+github@gmail.com>",
+  "license": "MIT"
+}
