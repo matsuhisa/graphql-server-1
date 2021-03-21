@@ -36,9 +36,10 @@ const resolvers = {
       return newPhoto
     }
   },
-  // Photo: {
-  //     url: parent => `http://yoursite.com/img/${parent.id}.jpg`
-  // }
+  // ルートに追加されたリゾルバ => トリビアリゾルバ
+  Photo: {
+      url: parent => `http://yoursite.com/img/${parent.id}.jpg`
+  }
 }
 
 const server = new ApolloServer({
