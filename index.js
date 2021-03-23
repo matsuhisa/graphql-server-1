@@ -83,11 +83,7 @@ const resolvers = {
   Photo: {
     url: parent => `http://yoursite.com/img/${parent.id}.jpg`,
     postedBy: parent => {
-      console.log("----------")
       users.forEach(user => console.log(user.githubLogin))
-      console.log(parent.githubUser)
-      console.log(users.filter( u => u.githubLogin === parent.githubUser))
-      console.log("----------")
       return users.find( u => u.githubLogin === parent.githubUser)
     }
   },
