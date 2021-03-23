@@ -13,6 +13,7 @@ const typeDefs = `
     name: String
     avatar: String
     postedPhotos: [Photo!]!
+    inPhotos: [Photo!]!
   }
 
   type Photo {
@@ -23,6 +24,7 @@ const typeDefs = `
     category: PhotoCategory!
     githubUser: String
     postedBy: User!
+    taggedUsers: [User!]!
   }
 
   input PostPhotoInput {
@@ -34,6 +36,7 @@ const typeDefs = `
   type Query {
     totalPhotos: Int!
     allPhotos: [Photo!]!
+    allUsers: [User!]!
   }
 
   type Mutation {
@@ -45,6 +48,7 @@ let _id = 2
 const users = [
   { 'githubLogin': 'foo', 'name': 'たんじろう' },
   { 'githubLogin': 'bar', 'name': 'ねづこ' },
+  { 'githubLogin': 'kaminari', 'name': 'ぜんじろう' },
 ]
 let photos = [
   {
@@ -61,12 +65,32 @@ let photos = [
     'category': 'ACTION',
     'githubUser': 'bar'
   },
+  {
+    'id': 3,
+    'name': 'Dropping the Heart Chute 3',
+    'description': 'さしすせそ',
+    'category': 'ACTION',
+    'githubUser': 'kaminari'
+  },
+  {
+    'id': 4,
+    'name': 'Dropping the Heart Chute 4',
+    'description': 'たちつてと',
+    'category': 'ACTION',
+    'githubUser': 'kaminari'
+  },
+]
+let tags = [
+  { 'PhotoID': '1', 'UserId': 'foo' },
+  { 'PhotoID': '2', 'UserId': 'foo' },
+  { 'PhotoID': '2', 'UserId': 'bar' },
 ]
 
 const resolvers = {
   Query: {
     totalPhotos: () => photos.length,
-    allPhotos: () => photos
+    allPhotos: () => photos,
+    allUsers: () => users
   },
 
   Mutation: {
@@ -85,12 +109,26 @@ const resolvers = {
     postedBy: parent => {
       users.forEach(user => console.log(user.githubLogin))
       return users.find( u => u.githubLogin === parent.githubUser)
-    }
+    },
+    taggedUsers: parent => tags
+                            // 1. 対象の写真が関係しているタグの配列を返す
+                            .filter( tag => tag.PhotoID == parent.id )
+                            // 2. タグの配列をユーザーIDの配列に変換する
+                            .map(tag => tag.UserId)
+                            // 3. ユーザーIDの配列をユーザーオブジェクトの配列に変換する
+                            .map(userId => users.find(u => u.githubLogin === userId))
   },
   User: {
     postedPhotos: parent => {
       return photos.filter( p => p.githubUser === parent.githubLogin )
-    }
+    },
+    inPhotos: parent => tags
+                        // 1.
+                        .filter( tag => tag.userId === parent.githubLogin )
+                        // 2.
+                        .map( tag => tag.PhotoID )
+                        // 3.
+                        .map( PhotoID => photos.find( p => p.id === PhotoID ) )
   }
 }
 
