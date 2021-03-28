@@ -1,6 +1,9 @@
 const { ApolloServer } = require(`apollo-server`)
+const { GraphQLScalarType } = require('graphql')
+
 const typeDefs = `
-  enum PhotoCategory {
+scalar DateTime
+enum PhotoCategory {
     SELFIE
     PORTTRIT
     ACTION
@@ -25,6 +28,7 @@ const typeDefs = `
     githubUser: String
     postedBy: User!
     taggedUsers: [User!]!
+    created: DateTime!
   }
 
   input PostPhotoInput {
@@ -56,28 +60,32 @@ let photos = [
     'name': 'Dropping the Heart Chute 1',
     'description': 'あいうえお',
     'category': 'ACTION',
-    'githubUser': 'foo'
+    'githubUser': 'foo',
+    'created': '3-19-1998',
   },
   {
     'id': 2,
     'name': 'Dropping the Heart Chute 2',
     'description': 'かきくけこ',
     'category': 'ACTION',
-    'githubUser': 'bar'
+    'githubUser': 'bar',
+    'created': '3-19-2008',
   },
   {
     'id': 3,
     'name': 'Dropping the Heart Chute 3',
     'description': 'さしすせそ',
     'category': 'ACTION',
-    'githubUser': 'kaminari'
+    'githubUser': 'kaminari',
+    'created': '3-19-2018',
   },
   {
     'id': 4,
     'name': 'Dropping the Heart Chute 4',
     'description': 'たちつてと',
     'category': 'ACTION',
-    'githubUser': 'kaminari'
+    'githubUser': 'kaminari',
+    'created': '3-19-2028',
   },
 ]
 let tags = [
@@ -97,7 +105,8 @@ const resolvers = {
     postPhoto( parent, args ) {
       let newPhoto = {
         id: _id++,
-        ...args.input
+        ...args.input,
+        created: new Date()
       }
       photos.push(newPhoto)
       return newPhoto
@@ -129,7 +138,14 @@ const resolvers = {
                         .map( tag => tag.PhotoID )
                         // 3.
                         .map( PhotoID => photos.find( p => p.id === PhotoID ) )
-  }
+  },
+  DateTime: new GraphQLScalarType({
+    name: 'DateTime',
+    description: 'A valid date time value.',
+    parseValue: value => new Date(value),
+    serialize: value => new Date(value).toISOString(),
+    parseLiteral: ast => ast.value
+  })
 }
 
 const server = new ApolloServer({
