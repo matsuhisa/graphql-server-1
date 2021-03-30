@@ -2,53 +2,9 @@ const { ApolloServer } = require('apollo-server-express')
 const express = require('express')
 const { GraphQLScalarType } = require('graphql')
 const expressPlayground = require('graphql-playground-middleware-express').default
+const { readFileSync } = require('fs')
 
-const typeDefs = `
-scalar DateTime
-enum PhotoCategory {
-    SELFIE
-    PORTTRIT
-    ACTION
-    LANDSCAPE
-    GRAPHIC
-  }
-
-  type User {
-    githubLogin: ID!
-    name: String
-    avatar: String
-    postedPhotos: [Photo!]!
-    inPhotos: [Photo!]!
-  }
-
-  type Photo {
-    id: ID!
-    url: String!
-    name: String!
-    description: String
-    category: PhotoCategory!
-    githubUser: String
-    postedBy: User!
-    taggedUsers: [User!]!
-    created: DateTime!
-  }
-
-  input PostPhotoInput {
-    name: String!
-    category: PhotoCategory=PORTTRIT
-    description: String
-  }
-
-  type Query {
-    totalPhotos: Int!
-    allPhotos: [Photo!]!
-    allUsers: [User!]!
-  }
-
-  type Mutation {
-    postPhoto(input: PostPhotoInput): Photo!
-  }
-`
+const typeDefs = readFileSync('./typeDefs.graphql', 'utf-8')
 
 let _id = 2
 const users = [
