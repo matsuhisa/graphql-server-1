@@ -1,10 +1,10 @@
 const { ApolloServer } = require('apollo-server-express')
 const express = require('express')
-const { GraphQLScalarType } = require('graphql')
 const expressPlayground = require('graphql-playground-middleware-express').default
 const { readFileSync } = require('fs')
 
 const typeDefs = readFileSync('./typeDefs.graphql', 'utf-8')
+const resolvers = require('./resolvers')
 
 let _id = 2
 const users = [
@@ -51,66 +51,6 @@ let tags = [
   { 'PhotoID': '2', 'UserId': 'foo' },
   { 'PhotoID': '2', 'UserId': 'bar' },
 ]
-
-const resolvers = {
-  Query: {
-    totalPhotos: () => photos.length,
-    allPhotos: () => photos,
-    allUsers: () => users
-  },
-
-  Mutation: {
-    postPhoto( parent, args ) {
-      let newPhoto = {
-        id: _id++,
-        ...args.input,
-        created: new Date()
-      }
-      photos.push(newPhoto)
-      return newPhoto
-    }
-  },
-  // ルートに追加されたリゾルバ => トリビアリゾルバ
-  Photo: {
-    url: parent => `http://yoursite.com/img/${parent.id}.jpg`,
-    postedBy: parent => {
-      return users.find( u => u.githubLogin === parent.githubUser)
-    },
-    taggedUsers: parent => tags
-                            // 1. 対象の写真が関係しているタグの配列を返す
-                            .filter( tag => tag.PhotoID == parent.id )
-                            // 2. タグの配列をユーザーIDの配列に変換する
-                            .map(tag => tag.UserId)
-                            // 3. ユーザーIDの配列をユーザーオブジェクトの配列に変換する
-                            .map(userId => users.find(u => u.githubLogin === userId))
-  },
-  User: {
-    postedPhotos: parent => {
-      return photos.filter( p => p.githubUser === parent.githubLogin )
-    },
-    inPhotos: parent => tags
-                        // 1.
-                        .filter( tag => tag.userId === parent.githubLogin )
-                        // 2.
-                        .map( tag => tag.PhotoID )
-                        // 3.
-                        .map( PhotoID => photos.find( p => p.id === PhotoID ) )
-  },
-  DateTime: new GraphQLScalarType({
-    name: 'DateTime',
-    description: 'A valid date time value.',
-    parseValue: value => new Date(value),
-    serialize: value => new Date(value).toISOString(),
-    parseLiteral: ast => ast.value
-  })
-}
-
-// const server = new ApolloServer({
-//   typeDefs,
-//   resolvers,
-// })
-
-// server.listen().then(({url}) => console.log(`GraphQL Server running on ${url}`))
 
 let app = express()
 const server = new ApolloServer({ typeDefs, resolvers })
