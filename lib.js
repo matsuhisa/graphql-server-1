@@ -7,19 +7,21 @@ const fetch = require('node-fetch')
  * Code
 */
 
-const requestGithubToken = credential => 
-  fetch(`https://github.com/login/oauth/access_token`, 
-    {
-      method: 'post',
-      headers: {
-        'Content-type': 'applicaton/json',
-        'Accept': 'application/json'
-      },
-      body: JSON.stringify(credential)
-    }
-  )
-  .then(res => res.json())
+const requestGithubToken = credentials => 
+  fetch(`https://github.com/login/oauth/access_token`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': `application/json`,
+      'Accept': `application/json`
+    },
+    body: JSON.stringify(credentials)
+  })
+  .then(res => {
+    console.table(res)
+    return res.json()
+  })
   .catch(error => {
+    console.log('Error requestGithubToken')
     throw new Error(JSON.stringify(error))
   })
 
@@ -28,16 +30,31 @@ const requestGithubToken = credential =>
  */
 
 const requestGithubUserAccount = token =>
-  fetch(`https://api.github.com/user?access_token=${ token }`)
-    .then(toJSON)
-    .catch(throwError)
+  fetch(`https://api.github.com/user`, {
+    method: 'GET',
+    headers: {
+      'Authorization': `token ${token}`
+    },
+    redirect: 'follow'
+  })
+  .then(res => {
+    console.table(res)
+    return res.json()
+  })
+  .catch(error => {
+    console.log('Error requestGithubUserAccount')
+    throw new Error(JSON.stringify(error))
+  })
 
 async function authorizeWithGithub(credential) {
+  console.table(credential)
   const { access_token } = await requestGithubToken(credential)
+  console.log('<-- access_token')
+  console.table(access_token)
   const githubUser = await requestGithubUserAccount(access_token)
-  return {
-    ...githubUser, access_token
-  }
+  console.log('-----------')
+  console.table(githubUser)
+  return { ...githubUser, access_token }
 }
 
 module.exports = { authorizeWithGithub }
