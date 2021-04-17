@@ -1,17 +1,25 @@
 const { authorizeWithGithub } = require("../lib")
 
 module.exports = {
-  postPhoto( parent, args ) {
-    let newPhoto = {
-      id: _id++,
-      ...args.input,
-      created: new Date()
+  async postPhoto(parent, args, { db, currentUser }) {
+
+    if(!currentUser){
+      throw new Error('エラー：ログインしていない')
     }
-    photos.push(newPhoto)
+
+    const newPhoto = {
+      ...args.input,
+      userID: currentUser.githubLogin,
+      cureated: new Date()
+    }
+
+    const { insertedIds } = await db.collection('photos').insert(newPhoto)
+    newPhoto.id = insertedIds[0]
     return newPhoto
   },
 
   async githubAuth( parent, {code}, {db} ) {
+    console.log('----->')
     // 1. Githubからデータを取得する
     let {
       message,
@@ -53,5 +61,5 @@ module.exports = {
       .replaceOne({ githubLogin: login }, latestUserInfo, {upsert: true})
 
     return { user, token: access_token }
-  }
+  },
 }
