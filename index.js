@@ -34,9 +34,13 @@ const start = async () => {
     return { db, currentUser };
   } })
   server.applyMiddleware({ app })
-  
-  app.get('/', (req, res) => res.end(`Welocome to PhotoShare API`))
-  app.get('/playground', expressPlayground({ endpoint: '/graphql' }))
+
+  app.get('/playground', expressPlayground({ endpoint: '/graphql' }))  
+  app.get('/', (req, res) => {
+    let url = `https://github.com/login/oauth/authorize?client_id=${process.env.CLIENT_ID}&scope=user`
+    res.end(`<a href="${url}">Sign In with Github</a>`)
+  })
+
   
   app.listen({ port: 4000 }, () => {
     console.log(`GraphQL Server running @  http://localhost:4000${server.graphqlPath}`)
