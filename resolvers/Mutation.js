@@ -2,7 +2,7 @@ const { authorizeWithGithub } = require("../lib")
 const fetch = require('node-fetch')
 
 module.exports = {
-  async postPhoto(parent, args, { db, currentUser }) {
+  async postPhoto(parent, args, { db, currentUser, pubsub }) {
 
     if(!currentUser){
       throw new Error('エラー：ログインしていない')
@@ -16,6 +16,8 @@ module.exports = {
 
     const { insertedIds } = await db.collection('photos').insert(newPhoto)
     newPhoto.id = insertedIds[0]
+
+    pubsub.publish('photo-added', { newPhoto })
     return newPhoto
   },
 
