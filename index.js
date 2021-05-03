@@ -3,6 +3,7 @@ const express = require('express')
 const expressPlayground = require('graphql-playground-middleware-express').default
 const { readFileSync } = require('fs')
 const { MongoClient } = require('mongodb')
+const { createServer } = require('http')
 
 require('dotenv').config()
 
@@ -41,8 +42,10 @@ const start = async () => {
     res.end(`<a href="${url}">Sign In with Github</a>`)
   })
 
-  
-  app.listen({ port: 4000 }, () => {
+  const httpServer = createServer(app)
+  server.installSubscriptionHandlers(httpServer)
+
+  httpServer.listen({ port: 4000 }, () => {
     console.log(`GraphQL Server running @  http://localhost:4000${server.graphqlPath}`)
   })
 }
