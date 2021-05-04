@@ -30,21 +30,18 @@ const start = async () => {
   }
 
   const pubsub = new PubSub()
-  console.log('index.js ===========')
   const server = new ApolloServer({
     typeDefs,
     resolvers, 
     context: async({req, connection}) => {
-      const githubToken = req ? req.headers.authorization : connection.context.Authorization
+      let githubToken = ''
+      console.log(connection)
+      if(connection) {
+        githubToken = connection.context.Authorization
+      }else{
+        githubToken = req.headers.authorization
+      }
       const currentUser = await db.collection('users').findOne({ githubToken })
-
-      console.log(`req.headers.authorization--> ${req.headers.authorization}`)
-      console.table(connection)
-      // console.log(`connection.collection.authorization--> ${connection.context.authorization}`)
-      // console.log(githubToken)
-      // console.log('connection ----------')
-      // console.table(connection)
-
       return { db, currentUser, pubsub }
     },
     playground: true,
@@ -52,7 +49,7 @@ const start = async () => {
   })
   server.applyMiddleware({ app })
 
-  app.get('/playground', expressPlayground({ endpoint: '/graphql' }))  
+  app.get('/playground', expressPlayground({ endpoint: 'http://localhost:4000/graphql' }))  
   app.get('/', (req, res) => {
     let url = `https://github.com/login/oauth/authorize?client_id=${process.env.CLIENT_ID}&scope=user`
     res.end(`<a href="${url}">Sign In with Github</a>`)
